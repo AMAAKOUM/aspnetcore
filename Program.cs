@@ -1,37 +1,41 @@
-namespace FirstCoreWebApplication
+using SecondCoreWebApplication.Models;
+
+namespace SecondCoreWebApplication
 {
     public class Program
     {
-        // le point d'entree dans le programme ou l application
         public static void Main(string[] args)
         {
-            
             var builder = WebApplication.CreateBuilder(args);
-           
+
+            // inscrire le service dans le conteneur DI 
+
+            // ajout de services Framework Mvc 
+            builder.Services.AddMvc();
+
+            // Inscrire un DI Singleton par defaut
+            builder.Services.Add(new ServiceDescriptor(typeof(IStudenRepository), new StudentRepository()));
+            
+            // pour inscrire DI Singleton
+            //builder.Services.Add(new ServiceDescriptor(typeof(IStudenRepository), typeof(StudentRepository), ServiceLifetime.Singleton));
+            
+            // pour inscrire un DI Transient (ephémère)
+            //builder.Services.Add(new ServiceDescriptor(typeof(IStudenRepository), typeof(StudentRepository), ServiceLifetime.Transient));
+            
+            // pour inscrire un DI Scoped (portée)
+            //builder.Services.Add(new ServiceDescriptor(typeof(IStudenRepository), typeof(StudentRepository), ServiceLifetime.Scoped));
+            
+
             var app = builder.Build();
 
-            // premier composant Middleware avec la methode Use
-            app.Use(async (context, next) =>
-            {
-                await context.Response.WriteAsync("MiddleWare 1: Incoming Request\n ");
-                await next();
-                await context.Response.WriteAsync("Middleware 1: OutComing Request\n");
-            });
-
-            // second composant Middleware tjrs avec Use method
-            app.Use(async (context, next) =>
-            {
-                await context.Response.WriteAsync("Middleware 2: Incoming\n");
-                await next();
-                await context.Response.WriteAsync("Middleware 2: Outcoming\n");
-            });
-            // Troisieme composant middleware avec la methode Run
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("Middleware 3: Incoming request and response generated\n");
-            });
+            //app.MapGet("/", () => "Hello World!");
+            app.UseRouting();
+            app.MapControllerRoute(
+                name : "default",
+                pattern : "{controller=Home}/{action=Index}/{id?}"
+                );
+            
             app.Run();
         }
-        
     }
 }
